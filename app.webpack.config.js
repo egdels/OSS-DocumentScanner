@@ -640,6 +640,32 @@ module.exports = (env, params = {}) => {
     ];
     // return config;
 
+    // Patch webpack runtime to avoid node:url which NativeScript doesn't support
+    config.plugins.push({
+        apply(compiler) {
+            compiler.hooks.afterEmit.tap('PatchNodeUrl', (compilation) => {
+                const fs = require('fs');
+                const path = require('path');
+                const outputPath = compilation.outputOptions.path;
+                for (const [name] of Object.entries(compilation.assets)) {
+                    if (name.endsWith('.js')) {
+                        const filePath = path.join(outputPath, name);
+                        try {
+                            let content = fs.readFileSync(filePath, 'utf8');
+                            if (content.includes('require("node:url")')) {
+                                content = content.replace(
+                                    /require\("node:url"\)\.pathToFileURL\(__filename\)/g,
+                                    '""'
+                                );
+                                fs.writeFileSync(filePath, content);
+                            }
+                        } catch (e) {}
+                    }
+                }
+            });
+        }
+    });
+
     if (env.adhoc || env.adhoc_sentry) {
         config.plugins.push(new WaitPlugin(join(projectRoot, appPath, 'assets', 'webpdfviewer', 'index.html'), 100, 60000));
     }
