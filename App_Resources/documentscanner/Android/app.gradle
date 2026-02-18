@@ -2,7 +2,7 @@
 project.ext.abiCodes = ['armeabi':1, 'armeabi-v7a':2, 'arm64-v8a':3, 'x86':4, 'x86_64':5]
 def BUILD_TOOLS_PATH = "$rootDir/build-tools"
 
-apply plugin: "androidx.baselineprofile"
+// apply plugin: "androidx.baselineprofile"
 apply plugin: "org.jetbrains.kotlin.android"
 
 android { 
@@ -10,7 +10,7 @@ android {
   def splitEnabled = (gradle.startParameter.taskNames.contains("assembleDebug") && project.hasProperty('abiFilters')) || project.hasProperty('splitEnabled');
   defaultConfig {  
     multiDexEnabled false
-    minSdkVersion 21
+    minSdkVersion 24
     versionCode 135
     versionName "1.18.1"
 
@@ -149,12 +149,12 @@ task createProguard {
     }
 }
 project.tasks.configureEach {
-    if (name =~ /buildMetadata/) {
+    /*if (name =~ /buildMetadata/) {
         it.finalizedBy(createProguard)
     }
     if (name =~ /minify(Debug|Release)WithR8/) {
         it.dependsOn(createProguard)
-    }
+    }*/
 }
 
 android.applicationVariants.all { variant ->
@@ -189,7 +189,7 @@ dependencies {
     }
 
     implementation "androidx.profileinstaller:profileinstaller:1.4.1"
-    baselineProfile project(':baselineprofile')
+    // baselineProfile project(':baselineprofile')
 
     implementation "com.github.skydoves:colorpickerview:2.2.4"
 }
