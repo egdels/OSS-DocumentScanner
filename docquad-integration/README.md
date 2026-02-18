@@ -249,6 +249,26 @@ Only `DocQuadOrtRunner` and `DocQuadDetector` use Android APIs:
 
 ---
 
+## APK Size Impact
+
+The DocQuad integration increases the APK size by approximately **21–22 MB** (per device via AAB):
+
+| Component | Size |
+|---|---|
+| ONNX model (`.ort`) | ~13 MB |
+| ONNX Runtime (native libs, per ABI) | ~8–9 MB |
+| Kotlin code | ~0.1 MB |
+| **Total (AAB / per device)** | **~21–22 MB** |
+| **Total (universal APK, all ABIs)** | **~38–40 MB** |
+
+> **Note:** When distributing via App Bundle (AAB), each device only downloads the native
+> libraries for its own ABI (e.g., arm64-v8a), resulting in ~21–22 MB overhead.
+> A universal APK containing all ABIs would add ~38–40 MB.
+> The model file could potentially be reduced to ~3–4 MB via INT8 quantization,
+> if accuracy remains acceptable.
+
+---
+
 ## License
 
 The DocQuadNet-256 model and associated code originate from the
