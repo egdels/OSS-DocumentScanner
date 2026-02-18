@@ -1,6 +1,6 @@
 > **⚠️ Fork Notice**
 >
-> This is a **prototype fork** of [OSS Document Scanner](https://github.com/Akylas/OSS-DocumentScanner), created solely for the experimental integration of the **DocQuadNet-256 corner detection model** from the [MakeACopy](https://github.com/schliweb/makeacopy) project.
+> This is a **prototype fork** of [OSS Document Scanner](https://github.com/Akylas/OSS-DocumentScanner), created solely for the experimental integration of the **DocQuadNet-256 corner detection model** from the [MakeACopy](https://github.com/egdels/makeacopy) project.
 >
 > **This fork is not intended for production use.** It serves only as a proof-of-concept for ML-based document corner detection.
 >
