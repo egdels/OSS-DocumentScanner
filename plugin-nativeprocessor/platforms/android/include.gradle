@@ -1,28 +1,24 @@
 apply plugin: "org.jetbrains.kotlin.android"
 android {
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
 
-        if (project.hasProperty("tempBuild")) {
-            externalNativeBuild {
-                cmake {
-                    cppFlags "-frtti -fexceptions"
-                    abiFilters 'armeabi-v7a', "arm64-v8a", 'x86', 'x86_64'
-                    if (project.hasProperty("withQRCode")) {
-                        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_STL=c++_static", "-DWITH_QRCODE=1"
-                    } else {
-                        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_STL=c++_static"
-                    }
+        externalNativeBuild {
+            cmake {
+                cppFlags "-frtti -fexceptions"
+                abiFilters 'armeabi-v7a', "arm64-v8a", 'x86', 'x86_64'
+                if (project.hasProperty("withQRCode")) {
+                    arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_STL=c++_static", "-DWITH_QRCODE=1"
+                } else {
+                    arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_STL=c++_static"
                 }
             }
         }
     }
-    if (project.hasProperty("tempBuild")) {
-        ndkVersion project.ndkVersion
-        externalNativeBuild {
-            cmake {
-                path "src/main/cpp/CMakeLists.txt"
-            }
+    ndkVersion project.ndkVersion
+    externalNativeBuild {
+        cmake {
+            path file("${rootDir}/../../plugin-nativeprocessor/platforms/android/cpp/CMakeLists.txt").absolutePath
         }
     }
 
@@ -57,4 +53,7 @@ dependencies {
     def itextpdfVersion = { -> project.hasProperty("itextpdfVersion") ? itextpdfVersion : "7.2.3" }
     implementation "com.itextpdf.android:kernel-android:$itextpdfVersion"
     implementation "com.itextpdf.android:layout-android:$itextpdfVersion"
+
+    def onnxRuntimeVersion = project.hasProperty("onnxRuntimeVersion") ? project.onnxRuntimeVersion : "1.24.1"
+    implementation "com.microsoft.onnxruntime:onnxruntime-android:$onnxRuntimeVersion"
 }
