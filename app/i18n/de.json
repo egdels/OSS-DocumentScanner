@@ -31,6 +31,8 @@
     "always": "immer",
     "always_prompt_crop_edit": "immer zur Bearbeitung des Dokumentenbereiches auffordern",
     "always_prompt_crop_edit_desc": "Immer den Dokumentenbereich bestätigen/bearbeiten, wenn Aufnahmen von der Kamera nicht im Batch-Modus hinzugefügt werden",
+    "use_docquad_detector": "ML-Dokumentenerkennung (DocQuadNet) verwenden",
+    "use_docquad_detector_desc": "Verwendet das ML-basierte DocQuadNet-Modell zur Dokumentenkanten-Erkennung anstelle des klassischen OpenCV-Detektors. Kann bei komplexen Hintergründen bessere Ergebnisse liefern.",
     "app": {
         "name": "OSS Dokumentenscanner"
     },
