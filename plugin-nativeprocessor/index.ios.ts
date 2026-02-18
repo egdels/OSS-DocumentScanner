@@ -92,6 +92,12 @@ export async function getJSONDocumentCornersFromFile(src: string, options: Corne
           OpencvDocumentProcessDelegate.getJSONDocumentCornersFromFileDelegateOptions(src, delegate, JSON.stringify(options))
     );
 }
+export function getDocQuadCornersSync(editingImage: ImageSource): Quads {
+    throw new Error('DocQuad detection is not yet supported on iOS');
+}
+export async function getDocQuadCornersFromFile(src: string, options: CornersOptions = {}): Promise<Quads> {
+    throw new Error('DocQuad detection is not yet supported on iOS');
+}
 export async function processFromFile(src: string, processes: any[], options: LoadImageOptions = {}): Promise<any[]> {
     return wrapPromiseWithCompletionHandler(delegate => 
            OpencvDocumentProcessDelegate.processFromFileProcessesOptionsDelegate(
