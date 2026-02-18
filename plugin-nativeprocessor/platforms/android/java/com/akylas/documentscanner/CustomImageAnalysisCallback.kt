@@ -22,6 +22,8 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.max
 import kotlin.math.min
+import com.akylas.documentscanner.docquad.DocQuadDetector
+import com.akylas.documentscanner.docquad.DocQuadOrtRunner
 
 
 class CustomImageAnalysisCallback
@@ -48,6 +50,8 @@ constructor(
     var detectQRCode = false
     var detectDocuments = true
     var detectQRCodeOptions = "{\"resizeThreshold\":500}"
+    var useDocQuadDetector = false
+    private val docQuadDetector: DocQuadDetector by lazy { DocQuadDetector() }
 
     interface OnTestBitmap {
         fun onTestBitmap(bitmap: Bitmap)
@@ -62,6 +66,20 @@ constructor(
     }
 
     companion object {
+        /** Converts DocQuad corners (double[4][2]) to the same JSON format as nativeScanJSON. */
+        private fun docQuadCornersToJSON(corners: Array<DoubleArray>): String {
+            val quad = JSONArray()
+            for (corner in corners) {
+                val point = JSONArray()
+                point.put(corner[0])
+                point.put(corner[1])
+                quad.put(point)
+            }
+            val result = JSONArray()
+            result.put(quad)
+            return result.toString()
+        }
+
         private external fun nativeScanJSON(
             srcBitmap: Bitmap,
             shrunkImageHeight: Int,
@@ -382,6 +400,47 @@ constructor(
         ): String {
             return nativeScanJSON(bitmap, shrunkImageHeight.toInt(), imageRotation, scale, options)
         }
+
+        @JvmOverloads
+        fun getDocQuadCornersSync(
+            bitmap: Bitmap,
+            context: Context
+        ): String {
+            val detector = DocQuadDetector()
+            val corners = detector.detect(bitmap, context)
+                ?: return JSONArray().toString()
+            return docQuadCornersToJSON(corners)
+        }
+        @JvmOverloads
+        fun getDocQuadCornersFromFile(
+            context: Context,
+            src: String,
+            callback: FunctionCallback,
+            options: String? = null
+        ) {
+            thread(start = true) {
+                var bitmap: Bitmap? = null
+                try {
+                    var loadBitmapOptions: ImageUtil.LoadImageOptions? = null
+                    if (options != null) {
+                        try {
+                            loadBitmapOptions = ImageUtil.LoadImageOptions(JSONObject(options))
+                        } catch (ignored: JSONException) {
+                        }
+                    }
+                    bitmap = ImageUtil.readBitmapFromFile(context, src, loadBitmapOptions, null)
+                    if (bitmap == null || bitmap.byteCount == 0) {
+                        callback.onResult(ImageUtil.ImageNotFoundException(src), null)
+                        return@thread
+                    }
+                    callback.onResult(null, getDocQuadCornersSync(bitmap, context))
+                } catch (e: Exception) {
+                    callback.onResult(e, null)
+                } finally {
+                    bitmap?.recycle()
+                }
+            }
+        }
         @JvmOverloads
         fun getJSONDocumentCorners(
             image: Bitmap,
@@ -596,8 +655,8 @@ constructor(
 
                 list.add(
                     Point(
-                        ((value2[0] as Int) * scale).toInt(),
-                        ((value2[1] as Int) * scale).toInt()
+                        ((value2.getDouble(0)) * scale).toInt(),
+                        ((value2.getDouble(1)) * scale).toInt()
                     )
                 )
             }
@@ -1008,14 +1067,31 @@ constructor(
             var qrcodeResult: String? = null;
 
             if (detectDocuments) {
-                val chromaPixelStride = planes[1].pixelStride
-                scanJSONResult = nativeBufferScanJSON(
-                    image.width, image.height, chromaPixelStride, planes[0].buffer,
-                    planes[0].rowStride, planes[1].buffer,
-                    planes[1].rowStride, planes[2].buffer,
-                    planes[2].rowStride, previewResizeThreshold.toInt(), info.rotationDegrees
-                );
-                
+                if (useDocQuadDetector) {
+                    val yuvConverter = YuvToRgbConverter(context)
+                    var bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+                    yuvConverter.yuvToRgb(image, bitmap)
+                    // Rotate bitmap to match imageRotation so that DocQuad corners
+                    // are in the same coordinate system as the native OpenCV path
+                    if (imageRotation != 0) {
+                        val matrix = android.graphics.Matrix()
+                        matrix.postRotate(imageRotation.toFloat())
+                        val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                        bitmap.recycle()
+                        bitmap = rotated
+                    }
+                    val corners = docQuadDetector.detect(bitmap, context)
+                    bitmap.recycle()
+                    scanJSONResult = if (corners != null) docQuadCornersToJSON(corners) else null
+                } else {
+                    val chromaPixelStride = planes[1].pixelStride
+                    scanJSONResult = nativeBufferScanJSON(
+                        image.width, image.height, chromaPixelStride, planes[0].buffer,
+                        planes[0].rowStride, planes[1].buffer,
+                        planes[1].rowStride, planes[2].buffer,
+                        planes[2].rowStride, previewResizeThreshold.toInt(), info.rotationDegrees
+                    );
+                }
             }
             if (detectQRCode) {
                 qrcodeResult = nativeQRCodeReadBuffer(
