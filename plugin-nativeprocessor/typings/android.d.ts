@@ -390,6 +390,8 @@ declare namespace com {
 					 function getJSONDocumentCorners(image: globalAndroid.graphics.Bitmap, callback: com.akylas.documentscanner.utils.FunctionCallback, shrunkImageHeight: number): void;
 					 function ocrDocumentFromFile(context: globalAndroid.content.Context, src: string, callback: com.akylas.documentscanner.utils.FunctionCallback): void;
 					 function cropDocument(bitmap: globalAndroid.graphics.Bitmap, quads: string, callback: com.akylas.documentscanner.utils.FunctionCallback, transforms: string, saveInFolder: string, fileName: string, compressFormat: string, compressQuality: number): void;
+					 function getDocQuadCornersSync(bitmap: globalAndroid.graphics.Bitmap, context: globalAndroid.content.Context): string;
+					 function getDocQuadCornersFromFile(context: globalAndroid.content.Context, src: string, callback: com.akylas.documentscanner.utils.FunctionCallback, options: string): void;
 				}
 				export class FunctionCallbackProgress extends java.lang.Object {
 					public static class: java.lang.Class<com.akylas.documentscanner.CustomImageAnalysisCallback.FunctionCallbackProgress>;
