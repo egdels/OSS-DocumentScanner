@@ -70,7 +70,9 @@
         SETTINGS_SYNC_ON_START,
         SETTINGS_TRANSFORM_BATCH_SIZE,
         TRANSFORM_BATCH_SIZE,
-        USE_SYSTEM_CAMERA
+        USE_DOCQUAD_DETECTOR,
+        USE_SYSTEM_CAMERA,
+        SETTINGS_USE_DOCQUAD_DETECTOR
     } from '~/utils/constants';
     import { copyFolderContent, removeFolderContent } from '~/utils/file';
     import { PDF_OPTIONS } from '~/utils/localized_constant';
@@ -222,6 +224,13 @@
                         description: lc('always_prompt_crop_edit_desc'),
                         value: ApplicationSettings.getBoolean(SETTINGS_ALWAYS_PROMPT_CROP_EDIT, ALWAYS_PROMPT_CROP_EDIT)
                     },
+                    ...(__ANDROID__ ? [{
+                        type: 'switch',
+                        id: SETTINGS_USE_DOCQUAD_DETECTOR,
+                        title: lc('use_docquad_detector'),
+                        description: lc('use_docquad_detector_desc'),
+                        value: ApplicationSettings.getBoolean(SETTINGS_USE_DOCQUAD_DETECTOR, USE_DOCQUAD_DETECTOR)
+                    }] : []),
                     {
                         id: 'setting',
                         key: 'previewResizeThreshold',
