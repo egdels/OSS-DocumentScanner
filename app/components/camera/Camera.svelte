@@ -34,6 +34,8 @@
         SETTINGS_CROP_ENABLED,
         SETTINGS_FONT_CAM_MIRRORED,
         SETTINGS_IMAGE_EXPORT_FORMAT,
+        SETTINGS_USE_DOCQUAD_DETECTOR,
+        USE_DOCQUAD_DETECTOR,
         getImageExportSettings
     } from '~/utils/constants';
     import { recycleImages } from '~/utils/images';
@@ -278,6 +280,11 @@
         if (processor) {
             processor.autoScanHandler = null;
             processor = null;
+        }
+        if (__ANDROID__ && ApplicationSettings.getBoolean(SETTINGS_USE_DOCQUAD_DETECTOR, USE_DOCQUAD_DETECTOR)) {
+            try {
+                com.akylas.documentscanner.docquad.DocQuadOrtRunner.releaseInstance();
+            } catch (e) {}
         }
         if (__ANDROID__) {
             Application.android.off(Application.android.activityBackPressedEvent, onAndroidBackButton);
@@ -570,6 +577,15 @@
                 );
                 (processor as com.akylas.documentscanner.CustomImageAnalysisCallback).setDetectQRCode(QRCodeOnly);
                 (processor as com.akylas.documentscanner.CustomImageAnalysisCallback).setDetectDocuments(!QRCodeOnly);
+                const useDocQuad = ApplicationSettings.getBoolean(SETTINGS_USE_DOCQUAD_DETECTOR, USE_DOCQUAD_DETECTOR);
+                (processor as com.akylas.documentscanner.CustomImageAnalysisCallback).setUseDocQuadDetector(useDocQuad);
+                if (useDocQuad) {
+                    try {
+                        com.akylas.documentscanner.docquad.DocQuadOrtRunner.getInstanceAsync(context, com.akylas.documentscanner.docquad.DocQuadDetector.DEFAULT_MODEL_ASSET_PATH);
+                    } catch (e) {
+                        console.error('DocQuad preload failed', e);
+                    }
+                }
                 nCameraView.processor = processor;
             } else {
                 processor = OpencvDocumentProcessDelegate.alloc().initWithCropViewOnQRCode(

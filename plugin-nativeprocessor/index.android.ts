@@ -62,6 +62,18 @@ export async function getJSONDocumentCornersFromFile(src: string, options: Corne
         (r) => (r ? JSON.parse(r) : [])
     );
 }
+export function getDocQuadCornersSync(editingImage: ImageSource): Quads {
+    const result = com.akylas.documentscanner.CustomImageAnalysisCallback.Companion.getDocQuadCornersSync(editingImage.android, Utils.android.getApplicationContext());
+    return result ? JSON.parse(result) : [];
+}
+export async function getDocQuadCornersFromFile(src: string, options: CornersOptions = {}): Promise<Quads> {
+    return androidFunctionCallbackPromise<Quads>(
+        (callback) => {
+            com.akylas.documentscanner.CustomImageAnalysisCallback.Companion.getDocQuadCornersFromFile(Utils.android.getApplicationContext(), src, callback, JSON.stringify(options));
+        },
+        (r) => (r ? JSON.parse(r) : [])
+    );
+}
 export async function processFromFile(src: string, processes: any[], options: LoadImageOptions = {}) {
     return androidFunctionCallbackPromise<any[]>(
         (callback) => {

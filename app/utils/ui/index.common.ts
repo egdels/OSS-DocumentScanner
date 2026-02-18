@@ -39,6 +39,7 @@ import {
     Quads,
     cropDocumentFromFile,
     detectQRCodeFromFile,
+    getDocQuadCornersFromFile,
     getFileName,
     getImageSize,
     getJSONDocumentCornersFromFile,
@@ -93,8 +94,10 @@ import {
     SETTINGS_IMAGE_EXPORT_QUALITY,
     SETTINGS_IMPORT_PDF_IMAGES,
     SETTINGS_TRANSFORM_BATCH_SIZE,
+    SETTINGS_USE_DOCQUAD_DETECTOR,
     TRANSFORMS_SPLIT,
     TRANSFORM_BATCH_SIZE,
+    USE_DOCQUAD_DETECTOR,
     USE_SYSTEM_CAMERA,
     getImageExportSettings
 } from '~/utils/constants';
@@ -221,7 +224,14 @@ export async function importAndScanImageOrPdfFromUris({ canGoToView = true, docu
                         const imageRotation = imageSize.rotation;
                         // TODO: detect JSON and QRCode in one go
                         DEV_LOG && console.log('[importAndScanImageFromUris] getJSONDocumentCornersFromFile', sourceImagePath, resizeThreshold);
-                        const quads = cropEnabled ? await getJSONDocumentCornersFromFile(sourceImagePath, { resizeThreshold, areaScaleMinFactor }) : undefined;
+                        let quads: Quads;
+                        if (cropEnabled) {
+                            if (__ANDROID__ && ApplicationSettings.getBoolean(SETTINGS_USE_DOCQUAD_DETECTOR, USE_DOCQUAD_DETECTOR)) {
+                                quads = await getDocQuadCornersFromFile(sourceImagePath);
+                            } else {
+                                quads = await getJSONDocumentCornersFromFile(sourceImagePath, { resizeThreshold, areaScaleMinFactor });
+                            }
+                        }
                         let qrcode;
                         if (CARD_APP) {
                             // try to get the qrcode to show it in the import screen
@@ -1789,7 +1799,11 @@ export async function processCameraImage({
     DEV_LOG && console.log('processCameraImage', imagePath, previewResizeThreshold, quads, imageSize.width, imageSize.height, alwaysPromptForCrop);
     if (cropEnabled) {
         const start = Date.now();
-        quads = await getJSONDocumentCornersFromFile(imagePath, { resizeThreshold: previewResizeThreshold * 1.5, areaScaleMinFactor });
+        if (__ANDROID__ && ApplicationSettings.getBoolean(SETTINGS_USE_DOCQUAD_DETECTOR, USE_DOCQUAD_DETECTOR)) {
+            quads = await getDocQuadCornersFromFile(imagePath);
+        } else {
+            quads = await getJSONDocumentCornersFromFile(imagePath, { resizeThreshold: previewResizeThreshold * 1.5, areaScaleMinFactor });
+        }
         DEV_LOG && console.log('processCameraImage got quads', Date.now() - start, 'ms');
     }
     if (cropEnabled && (quads.length === 0 || alwaysPromptForCrop)) {
