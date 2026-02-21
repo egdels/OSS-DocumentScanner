@@ -337,6 +337,46 @@ jni/x86_64/libonnxruntime.so                   uncompressed=  2.41 MB  compresse
 jni/x86_64/libonnxruntime4j_jni.so             uncompressed=  0.09 MB  compressed=  0.03 MB
 ```
 
+---
+
+## Python Visualization Script
+
+A Python script is provided to visualize the DocQuadNet-256 corner detection results on a local machine. This is useful for testing the model with different images and verifying the post-processing logic.
+
+### Prerequisites & Dependencies
+
+The script requires **Python 3.11+** and several libraries. It is recommended to use a virtual environment.
+
+```bash
+# Create and activate a virtual environment (optional)
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+# Install required dependencies
+pip install onnxruntime==1.24.1 opencv-python numpy pillow scipy
+```
+
+### Usage
+
+Run the script by providing the path to an input image. By default, it uses the `.ort` model located in the `model/` directory of this package.
+
+```bash
+# Basic usage (from the project root)
+python docquad-integration/scripts/visualize_corner_detection.py path/to/your_image.jpg
+
+# Specifying a different model path
+python docquad-integration/scripts/visualize_corner_detection.py path/to/your_image.jpg \
+  --model docquad-integration/model/docquadnet256_trained_opset17.ort
+```
+
+The script will:
+1. Load the model and image.
+2. Run inference.
+3. Apply the portable post-processing logic.
+4. Save the result as `detection_result.jpg` in the current directory, showing the detected corners and the quad.
+
+---
+
 ## License
 
 The DocQuadNet-256 model and associated code originate from the
