@@ -269,6 +269,74 @@ The DocQuad integration increases the APK size by approximately **21–22 MB** (
 
 ---
 
+## Building ONNX Runtime for Android (Minimal Setup)
+
+This section explains how to build a minimal ONNX Runtime (ORT) library for Android,
+optimized for the DocQuad model. The build process uses CMake and Ninja to compile
+the C++ ONNX Runtime core and generate an Android Archive (AAR) file.
+
+### Prerequisites
+
+Install the required build tools:
+
+```bash
+brew install ninja cmake
+```
+
+### Setup Python Virtual Environment
+
+Create and activate a Python virtual environment to manage dependencies:
+
+```bash
+/opt/homebrew/bin/python3.11 -m venv .venv
+source .venv/bin/activate
+python --version
+pip install -U flatbuffers
+```
+
+### Build Process
+
+Run the build script:
+
+```bash
+source .venv/bin/activate
+./scripts/build_minimal_onnxruntime.sh
+```
+
+The build script compiles ONNX Runtime with the following characteristics:
+
+- **Minimal configuration**: Only essential execution providers enabled
+- **Target platforms**: arm64-v8a, armeabi-v7a, x86, x86_64
+- **Output**: `app/libs/onnxruntime-android-v<version>.aar`
+
+The build system automatically packages all artifacts into a single AAR file. 
+
+Once the AAR is generated, add it to your Android project dependencies.
+
+Building ONNX Runtime with minimal configuration significantly reduces the binary size compared to a full build.
+The minimal build produces an AAR file of approximately **3.8 MB** (compressed).
+
+### Verifying the Build
+
+After a successful build, verify the AAR contents:
+
+```bash
+unzip -lv app/libs/onnxruntime-android-v1.24.1.aar | awk '/libonnxruntime/ { printf "%-45s  uncompressed=%6.2f MB  compressed=%6.2f MB\n", $8, $1/1024/1024, $3/1024/1024 }'
+```
+
+**Example output:**
+
+```
+jni/arm64-v8a/libonnxruntime.so                uncompressed=  2.24 MB  compressed=  0.92 MB
+jni/arm64-v8a/libonnxruntime4j_jni.so          uncompressed=  0.11 MB  compressed=  0.03 MB
+jni/armeabi-v7a/libonnxruntime.so              uncompressed=  1.41 MB  compressed=  0.71 MB
+jni/armeabi-v7a/libonnxruntime4j_jni.so        uncompressed=  0.08 MB  compressed=  0.03 MB
+jni/x86/libonnxruntime.so                      uncompressed=  2.05 MB  compressed=  0.86 MB
+jni/x86/libonnxruntime4j_jni.so                uncompressed=  0.09 MB  compressed=  0.03 MB
+jni/x86_64/libonnxruntime.so                   uncompressed=  2.41 MB  compressed=  0.95 MB
+jni/x86_64/libonnxruntime4j_jni.so             uncompressed=  0.09 MB  compressed=  0.03 MB
+```
+
 ## License
 
 The DocQuadNet-256 model and associated code originate from the
