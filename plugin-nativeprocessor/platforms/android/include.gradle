@@ -54,6 +54,7 @@ dependencies {
     implementation "com.itextpdf.android:kernel-android:$itextpdfVersion"
     implementation "com.itextpdf.android:layout-android:$itextpdfVersion"
 
+    // TODO: Replace with custom build aar (see docquad-integration/README.md)
     def onnxRuntimeVersion = project.hasProperty("onnxRuntimeVersion") ? project.onnxRuntimeVersion : "1.24.1"
     implementation "com.microsoft.onnxruntime:onnxruntime-android:$onnxRuntimeVersion"
 }
