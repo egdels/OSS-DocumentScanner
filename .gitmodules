@@ -4,3 +4,6 @@
 [submodule "tools"]
 	path = tools
 	url = https://github.com/Akylas/app-tools.git
+[submodule "docquad-integration/external/onnxruntime"]
+	path = docquad-integration/external/onnxruntime
+	url = https://github.com/microsoft/onnxruntime.git
